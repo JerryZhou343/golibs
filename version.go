@@ -1,4 +1,4 @@
-package common
+package golibs
 
 var(
     BUILD_VERSION ="xxx.xxx.xx"

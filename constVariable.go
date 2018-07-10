@@ -1,4 +1,4 @@
-package common
+package golibs
 
 
 const R_OK int = 1
