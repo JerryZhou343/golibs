@@ -82,10 +82,12 @@ func LogFileSize(size int, unit string)LogFileOption{
 		file.sizeFlag = true
 
 		switch unit {
-		case "M":
+		case "K":
 			file.sizeValue = int64(size) * 1024
-		case "G":
+		case "M":
 			file.sizeValue = int64(size) * 1024 * 1024
+		case "G":
+			file.sizeValue = int64(size) * 1024 * 1024 * 1024
 		default:
 			file.sizeValue = int64(size)
 		}
