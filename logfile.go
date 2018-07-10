@@ -1,5 +1,5 @@
 // CopyRight (C) Jerry.Chau
-// 非线安全,需要上层写日志保证,适配go-kit/kit 日志接口
+// 非线安全,需要上层写日志保证,适配go-kit/kit/log 日志接口
 
 
 
@@ -154,7 +154,6 @@ func (f *logFile)doRotate(){
 func (f *logFile)worker(){
 	for f.closed == false{
 		msg := <- f.msgQueue
-		fmt.Println(msg)
 		f.curFile.WriteString(msg)
 		if f.sizeFlag == true{
 			curInfo,_ := os.Stat(f.filePath+f.fileName)
