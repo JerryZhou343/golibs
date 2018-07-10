@@ -10,8 +10,10 @@ import (
 	"fmt"
 	"path/filepath"
 	"time"
-	"strconv"
 	"unsafe"
+	"compress/gzip"
+	"io"
+	"strconv"
 )
 
 type logFile struct{
@@ -126,7 +128,7 @@ func (f *logFile)doRotate(){
 	//dir , _ := filepath.Abs(f.filePath)
 	prefile := f.curFile
 	_, err := prefile.Stat()
-
+	var prefileName string = ""
 	if err == nil{
 		filePath := f.filePath + f.fileName
 		f.closed = true
@@ -134,8 +136,10 @@ func (f *logFile)doRotate(){
 		if err != nil{
 			fmt.Println("doRotate close err",err.Error())
 		}
+		y,m,d := time.Now().Date()
 		nowTime := time.Now().Unix()
-		err = os.Rename(filePath, filePath+"." + strconv.FormatInt(nowTime,10))
+		prefileName = filePath+"." +fmt.Sprintf("%.4d%.2d%.2d",y,m,d) + strconv.FormatInt(nowTime,10)
+		err = os.Rename(filePath, prefileName)
 	}
 
 	if f.fileName != ""{
@@ -150,6 +154,7 @@ func (f *logFile)doRotate(){
 		nowDate := time.Now().Format("2006-01-02")
 		f.todayDate = nowDate
 	}
+	go f.compressFile(prefileName,prefileName +".gz")
 }
 
 
@@ -169,4 +174,45 @@ func (f *logFile)worker(){
 				f.doRotate()
 		}
 	}
+}
+
+func (f *logFile)compressFile(Src string,Dst string) error{
+	defer func(){
+		rec := recover()
+		if rec != nil{
+			fmt.Println(rec)
+		}
+	}()
+	newfile, err := os.Create(Dst)
+	if err != nil {
+		return err
+	}
+	defer newfile.Close()
+
+	file, err := os.Open(Src)
+	if err != nil {
+		return err
+	}
+
+	zw := gzip.NewWriter(newfile)
+
+	filestat, err := file.Stat()
+	if err != nil {
+		return nil
+	}
+
+	zw.Name = filestat.Name()
+	zw.ModTime = filestat.ModTime()
+	_, err = io.Copy(zw, file)
+	if err != nil {
+		return nil
+	}
+
+	zw.Flush()
+	if err := zw.Close(); err != nil {
+		return nil
+	}
+	file.Close()
+	os.Remove(Src)
+	return nil
 }
