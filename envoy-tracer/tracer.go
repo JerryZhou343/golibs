@@ -9,7 +9,7 @@ type EnvoyTracer struct{}
 var _ opentracing.Tracer= &EnvoyTracer{}
 
 func (e EnvoyTracer) StartSpan(operationName string, opts ...opentracing.StartSpanOption) opentracing.Span {
-	return nil
+	return defaultNoopSpan
 }
 
 func (e EnvoyTracer) Inject(sm opentracing.SpanContext, format interface{}, carrier interface{}) error {
@@ -24,6 +24,6 @@ func (e EnvoyTracer) Extract(format interface{}, carrier interface{}) (opentraci
 		}
 	}
 
-	return nil,nil
+	return nil,opentracing.ErrSpanContextNotFound
 }
 
