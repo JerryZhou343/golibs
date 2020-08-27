@@ -1,2 +1,2 @@
 # common
-go application common library
+common library
